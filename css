@@ -1,8 +1,0 @@
-@media (max-width: 600px) {
-    .player {
-        padding: 15px;
-    }
-    audio {
-        margin: 10px 0;
-    }
-}

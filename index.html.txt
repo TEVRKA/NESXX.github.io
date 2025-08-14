@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我的音频播放器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .player {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-top: 30px;
+        }
+        audio {
+            width: 100%;
+            margin: 15px 0;
+        }
+        .playlist {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .track {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .track:hover {
+            background: #f9f9f9;
+        }
+        .playing {
+            background: #e6f7ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 我的音乐空间</h1>
+    
+    <div class="player">
+        <div id="now-playing">选择歌曲开始播放</div>
+        <audio id="audio-player" controls></audio>
+        
+        <div class="playlist">
+            <h3>播放列表</h3>
+            <div id="playlist-container">
+                <!-- 播放列表通过JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 音频文件列表（替换成你的音频URL）
+        const playlist = [
+            {
+                title: "示例音乐 1",
+                artist: "艺术家",
+                file: "audio/sample1.mp3" // 替换为你的音频路径
+            },
+            {
+                title: "示例音乐 2",
+                artist: "音乐人",
+                file: "audio/sample2.mp3" // GitHub支持MP3/OGG/WAV格式
+            }
+        ];
+
+        const audioPlayer = document.getElementById('audio-player');
+        const nowPlaying = document.getElementById('now-playing');
+        const playlistContainer = document.getElementById('playlist-container');
+
+        // 生成播放列表
+        playlist.forEach((track, index) => {
+            const trackEl = document.createElement('div');
+            trackEl.className = 'track';
+            trackEl.innerHTML = `${track.title} - <i>${track.artist}</i>`;
+            trackEl.onclick = () => playTrack(index);
+            playlistContainer.appendChild(trackEl);
+        });
+
+        // 播放函数
+        function playTrack(index) {
+            const track = playlist[index];
+            audioPlayer.src = track.file;
+            audioPlayer.play();
+            nowPlaying.textContent = `正在播放: ${track.title} - ${track.artist}`;
+            
+            // 更新高亮显示
+            document.querySelectorAll('.track').forEach(el => el.classList.remove('playing'));
+            playlistContainer.children[index].classList.add('playing');
+        }
+
+        // 自动播放下一首
+        audioPlayer.addEventListener('ended', () => {
+            const currentIndex = Array.from(playlistContainer.children).findIndex(
+                el => el.classList.contains('playing')
+            );
+            const nextIndex = (currentIndex + 1) % playlist.length;
+            playTrack(nextIndex);
+        });
+    </script>
+</body>
+</html>

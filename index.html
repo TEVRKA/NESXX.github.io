@@ -639,11 +639,11 @@
         // Github 仓库路径识别并加载音频文件
         async function loadGithubAudioFiles() {
             const path = githubPathInput.value.trim();
-            if (!path) return alert("NESXX.github.io/audio/");
+            if (!path) return alert("TEVRKA/NESXX.github.io/audio");
             // 解析路径 owner/repo/path...
             const pathParts = path.split('/');
             if (pathParts.length < 2) {
-                alert('NESXX.github.io/audio/');
+                alert('TEVRKA/NESXX.github.io/audio');
                 return;
             }
             const owner = pathParts[0];
@@ -826,4 +826,5 @@
     </script>
 </body>
 </html>
+
 

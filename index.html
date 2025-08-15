@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人音乐空间</title>
+    <title>简约音频播放器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -423,44 +423,23 @@
                 padding: 12px 15px;
             }
         }
-        
-        .github-info {
-            background: rgba(30, 30, 40, 0.7);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            font-size: 0.9rem;
-        }
-        
-        .github-info h3 {
-            color: #ff8a00;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .github-info p {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
-        .github-info code {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
     </style>
 </head>
-<body> 
-          <div class="now-playing">
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-music"></i> 简约音频播放器</h1>
+            <p>享受高品质音乐体验</p>
+        </header>
+        
+        <div class="player">
+            <div class="now-playing">
                 <div class="album-art">
-                    <i class="fab fa-github"></i>
+                    <i class="fas fa-music"></i>
                 </div>
                 <div class="track-info">
                     <h2 id="current-title">选择歌曲开始播放</h2>
-                    <h3 id="current-artist">个人音乐空间</h3>
+                    <h3 id="current-artist">简约音频播放器</h3>
                     <div class="progress-container">
                         <div class="progress-labels">
                             <span id="current-time">0:00</span>
@@ -506,8 +485,8 @@
             
             <div class="playlist">
                 <div class="playlist-header">
-                    <h3><i class="fas fa-list"></i> 个人音乐空间</h3>
-                    <span id="track-count">4 首歌曲</span>
+                    <h3><i class="fas fa-list"></i> 播放列表</h3>
+                    <span id="track-count">3 首歌曲</span>
                 </div>
                 <div class="playlist-container" id="playlist-container">
                     <!-- 播放列表由JS动态生成 -->
@@ -543,7 +522,7 @@
             },
             {
                 title: "MY ALL - 滨崎步.mp3",
-                artist: "https://<TEVRKA>.github.io/<NESXX.github.io>/audio/MY ALL - 滨崎步.mp3",
+                artist: "",
                 file: "audio/MY ALL - 滨崎步.mp3",
                 duration: 0
             },
@@ -555,13 +534,13 @@
             },
             {
                 title: "Nijamena (From Sita) - Anurag Kulkarni、Anup Rubens.mp3",
-                artist: "https://<TEVRKA>.github.io/<NESXX.github.io>/audio/Nijamena (From Sita) - Anurag Kulkarni、Anup Rubens.mp3",
+                artist: "",
                 file: "audio/Nijamena (From Sita) - Anurag Kulkarni、Anup Rubens.mp3",
                 duration: 0
             },
             {
                 title: "Håll om mig - Nanne.mp3",
-                artist: "https://<TEVRKA>.github.io/<NESXX.github.io>/audio/Håll om mig - Nanne.mp3",
+                artist: "",
                 file: "audio/Håll om mig - Nanne.mp3",
                 duration: 0
             }
@@ -736,5 +715,3 @@
     </script>
 </body>
 </html>
-
-

@@ -11,7 +11,6 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -207,68 +206,38 @@
             text-overflow: ellipsis;
         }
         
-        .progress-container {
+        /* 进度条容器 - 修改为独立于track-info */
+        .player-progress-container {
+            width: 100%;
             margin-bottom: 20px;
-            position: relative;
         }
         
         .progress-labels {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-size: 0.85rem;
             color: #ddd;
         }
         
         .progress-bar {
-            height: 16px; /* 增大高度便于触摸 */
-            background: rgba(60, 60, 70, 0.5);
-            border-radius: 10px;
+            height: 10px;
+            background: rgba(60, 60, 70, 0.8);
+            border-radius: 5px;
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-            touch-action: none;
-        }
-        
-        .buffer {
-            position: absolute;
-            height: 100%;
-            background: rgba(100, 100, 120, 0.4);
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s ease;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+            -webkit-tap-highlight-color: transparent;
         }
         
         .progress {
             height: 100%;
             background: linear-gradient(to right, #ff8a00, #da1b60);
-            border-radius: 10px;
+            border-radius: 5px;
             width: 0%;
             position: relative;
-            z-index: 2;
             transition: width 0.1s linear;
-        }
-        
-        .progress-thumb {
-            position: absolute;
-            right: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-            z-index: 3;
-            opacity: 0;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        
-        .progress-bar:hover .progress-thumb,
-        .progress-bar.active .progress-thumb {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.2);
         }
         
         .progress::after {
@@ -311,6 +280,7 @@
             justify-content: center;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            -webkit-tap-highlight-color: transparent;
         }
         
         .control-btn:hover {
@@ -347,6 +317,7 @@
             font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .mode-btn:hover, .mode-btn.active {
@@ -493,6 +464,7 @@
             border-radius: 8px;
             margin: 4px 0;
             background: rgba(30, 30, 40, 0.5);
+            -webkit-tap-highlight-color: transparent;
         }
         
         .track:hover {
@@ -566,6 +538,10 @@
                 font-size: 3.5rem;
             }
             
+            .track-info {
+                width: 100%;
+            }
+            
             .track-info h2 {
                 font-size: 1.5rem;
             }
@@ -574,15 +550,10 @@
                 font-size: 1.1rem;
             }
             
-            /* 在移动设备上增加进度条高度 */
-            .progress-bar {
-                height: 20px;
-            }
-            
-            .progress-thumb {
-                width: 20px;
-                height: 20px;
-                right: -10px;
+            /* 进度条容器在移动设备上保持全宽 */
+            .player-progress-container {
+                width: 100%;
+                margin-top: 10px;
             }
             
             .controls {
@@ -761,18 +732,17 @@
                 <div class="track-info">
                     <h2 id="current-title">选择歌曲开始播放</h2>
                     <h3 id="current-artist">个人音乐空间</h3>
-                    <div class="progress-container">
-                        <div class="progress-labels">
-                            <span id="current-time">0:00</span>
-                            <span id="total-time">0:00</span>
-                        </div>
-                        <div class="progress-bar" id="progress-bar">
-                            <div class="buffer" id="buffer"></div>
-                            <div class="progress" id="progress">
-                                <div class="progress-thumb"></div>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+            </div>
+            
+            <!-- 进度条容器独立出来，不受track-info宽度影响 -->
+            <div class="player-progress-container">
+                <div class="progress-labels">
+                    <span id="current-time">0:00</span>
+                    <span id="total-time">0:00</span>
+                </div>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress" id="progress"></div>
                 </div>
             </div>
             
@@ -830,7 +800,6 @@
         const nextBtn = document.getElementById('next-btn');
         const progressBar = document.getElementById('progress-bar');
         const progress = document.getElementById('progress');
-        const buffer = document.getElementById('buffer');
         const currentTimeEl = document.getElementById('current-time');
         const totalTimeEl = document.getElementById('total-time');
         const volumeSlider = document.getElementById('volume-slider');
@@ -842,6 +811,7 @@
         const modeOrderBtn = document.getElementById('mode-order');
         const modeRandomBtn = document.getElementById('mode-random');
         const modeRepeatBtn = document.getElementById('mode-repeat');
+        
         // 播放列表和当前状态
         let playlist = [
             {
@@ -903,7 +873,6 @@
         let currentTrackIndex = 0;
         let isPlaying = false;
         let playMode = 'order'; // order, random, repeat
-        let isDragging = false;
         
         // 初始化可视化条
         function initVisualizer() {
@@ -935,8 +904,6 @@
             prevBtn.addEventListener('click', playPrevious);
             nextBtn.addEventListener('click', playNext);
             progressBar.addEventListener('click', setProgress);
-            progressBar.addEventListener('mousedown', startDrag);
-            progressBar.addEventListener('touchstart', startDrag, { passive: false });
             volumeSlider.addEventListener('input', setVolume);
             
             // 播放模式
@@ -948,7 +915,6 @@
             audioPlayer.addEventListener('timeupdate', updateProgress);
             audioPlayer.addEventListener('ended', handleTrackEnd);
             audioPlayer.addEventListener('loadedmetadata', updateTrackInfo);
-            audioPlayer.addEventListener('progress', updateBuffer);
             
             // 设置初始音量
             audioPlayer.volume = volumeSlider.value;
@@ -1014,7 +980,6 @@
             currentTitleEl.textContent = track.title;
             currentArtistEl.textContent = track.artist;
             progress.style.width = '0%';
-            buffer.style.width = '0%';
             currentTimeEl.textContent = '0:00';
         }
         
@@ -1083,11 +1048,8 @@
         
         // 设置进度
         function setProgress(e) {
-            if (isDragging) return;
-            
-            const rect = this.getBoundingClientRect();
-            const clickX = e.type.includes('touch') ? e.touches[0].clientX - rect.left : e.offsetX;
             const width = this.clientWidth;
+            const clickX = e.offsetX;
             const duration = audioPlayer.duration;
             
             if (isNaN(duration)) return;
@@ -1095,50 +1057,8 @@
             audioPlayer.currentTime = (clickX / width) * duration;
         }
         
-        // 开始拖动进度条
-        function startDrag(e) {
-            e.preventDefault();
-            isDragging = true;
-            progressBar.classList.add('active');
-            
-            const moveHandler = (e) => {
-                if (!isDragging) return;
-                
-                const rect = progressBar.getBoundingClientRect();
-                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-                let clickX = clientX - rect.left;
-                clickX = Math.max(0, Math.min(clickX, rect.width));
-                
-                const width = progressBar.clientWidth;
-                const duration = audioPlayer.duration;
-                
-                if (isNaN(duration)) return;
-                
-                audioPlayer.currentTime = (clickX / width) * duration;
-            };
-            
-            const endHandler = () => {
-                isDragging = false;
-                progressBar.classList.remove('active');
-                document.removeEventListener('mousemove', moveHandler);
-                document.removeEventListener('touchmove', moveHandler);
-                document.removeEventListener('mouseup', endHandler);
-                document.removeEventListener('touchend', endHandler);
-            };
-            
-            document.addEventListener('mousemove', moveHandler);
-            document.addEventListener('touchmove', moveHandler, { passive: false });
-            document.addEventListener('mouseup', endHandler);
-            document.addEventListener('touchend', endHandler);
-            
-            // 立即更新一次进度
-            moveHandler(e);
-        }
-        
         // 更新进度条
         function updateProgress() {
-            if (isDragging) return;
-            
             const currentTime = audioPlayer.currentTime;
             const duration = audioPlayer.duration;
             
@@ -1154,18 +1074,6 @@
             if (!playlist[currentTrackIndex].duration) {
                 playlist[currentTrackIndex].duration = duration;
                 updatePlaylist();
-            }
-        }
-        
-        // 更新缓冲进度
-        function updateBuffer() {
-            if (audioPlayer.buffered.length > 0) {
-                const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
-                const duration = audioPlayer.duration;
-                if (duration > 0) {
-                    const bufferPercent = (bufferedEnd / duration) * 100;
-                    buffer.style.width = `${bufferPercent}%`;
-                }
             }
         }
         
@@ -1202,4 +1110,3 @@
     </script>
 </body>
 </html>
-

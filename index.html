@@ -240,13 +240,6 @@
             margin: 10px 0;
             font-size: 0.9em;
         }
-        
-        .status-message {
-            color: #4CAF50;
-            text-align: center;
-            margin: 10px 0;
-            font-size: 0.9em;
-        }
     </style>
 </head>
 <body>
@@ -288,7 +281,6 @@
             </div>
             
             <div id="errorMessage" class="error-message"></div>
-            <div id="statusMessage" class="status-message"></div>
         </div>
         
         <div class="playlist" id="playlist">
@@ -300,7 +292,7 @@
 
     <script>
         // 音乐文件列表 - 包含新增的5首歌曲，将Take Me Hand放在第一位置
-        let audioFiles = [
+        const audioFiles = [
             "Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3",
             "Håll om mig - Nanne.mp3",
             "IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3",
@@ -340,13 +332,11 @@
         const playlist = document.getElementById('playlist');
         const visualizer = document.getElementById('visualizer');
         const errorMessage = document.getElementById('errorMessage');
-        const statusMessage = document.getElementById('statusMessage');
 
         let currentTrack = 0;
         let animationId = null;
         let isPlaying = false;
         let isLoading = false; // 标记是否正在加载
-        let isAudioFolderScanned = false; // 标记是否已扫描音频文件夹
 
         // 创建音频上下文和分析器
         let audioContext = null;
@@ -418,33 +408,6 @@
                 // 顺序播放或单曲循环
                 return (currentTrack - 1 + audioFiles.length) % audioFiles.length;
             }
-        }
-
-        // 扫描audio文件夹中的音频文件
-        async function scanAudioFolder() {
-            statusMessage.textContent = '正在扫描音频文件夹...';
-            
-            try {
-                // 尝试通过服务器端API获取文件列表（如果服务器支持）
-                // 如果服务器不支持，则使用预定义的文件列表
-                const response = await fetch('audio/', { method: 'HEAD' });
-                
-                if (response.ok) {
-                    // 如果服务器支持目录列表，我们可以尝试获取
-                    // 但通常服务器不会返回目录列表，所以我们使用预定义列表
-                    statusMessage.textContent = '音频文件夹扫描完成，使用预定义列表';
-                } else {
-                    statusMessage.textContent = '音频文件夹不可访问，使用预定义列表';
-                }
-            } catch (error) {
-                console.log('无法访问音频文件夹，使用预定义列表');
-                statusMessage.textContent = '无法访问音频文件夹，使用预定义列表';
-            }
-            
-            // 无论如何，我们都使用预定义的文件列表
-            isAudioFolderScanned = true;
-            updatePlaylist();
-            return audioFiles;
         }
 
         // 更新播放列表
@@ -571,48 +534,8 @@
             // 清除之前的错误消息
             errorMessage.textContent = '';
             
-            // 设置音频源
-            // 尝试多种可能的音频文件路径
-            const possiblePaths = [
-                `audio/${encodeURIComponent(filename)}`,
-                `./audio/${encodeURIComponent(filename)}`,
-                `../audio/${encodeURIComponent(filename)}`,
-                `./${encodeURIComponent(filename)}`,
-                filename
-            ];
-            
-            let foundPath = null;
-            let lastError = null;
-            
-            for (const path of possiblePaths) {
-                try {
-                    // 首先检查文件是否存在
-                    const response = await fetch(path, { 
-                        method: 'HEAD',
-                        cache: 'no-cache'
-                    });
-                    
-                    if (response.ok) {
-                        // 检查Content-Type是否为音频类型
-                        const contentType = response.headers.get('Content-Type');
-                        if (contentType && contentType.startsWith('audio/')) {
-                            foundPath = path;
-                            break;
-                        }
-                    }
-                } catch (e) {
-                    lastError = e;
-                    continue;
-                }
-            }
-            
-            if (foundPath) {
-                audioPlayer.src = foundPath;
-            } else {
-                // 如果找不到文件，使用一个备用的音频URL
-                audioPlayer.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // 示例备用音频
-                errorMessage.textContent = `注意: ${filename} 未找到，使用备用音频。请确保音频文件位于正确的路径下。`;
-            }
+            // 设置音频源 - 直接使用audio文件夹路径
+            audioPlayer.src = `audio/${encodeURIComponent(filename)}`;
             
             // 更新播放列表高亮
             updatePlaylist();
@@ -623,7 +546,7 @@
                 
                 // 等待元数据加载完成
                 await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('加载超时')), 15000); // 增加超时时间到15秒
+                    const timeout = setTimeout(() => reject(new Error('加载超时')), 10000); // 增加超时时间到10秒
                     
                     audioPlayer.addEventListener('loadedmetadata', () => {
                         clearTimeout(timeout);
@@ -771,15 +694,15 @@
         });
 
         // 初始化
-        scanAudioFolder().then(() => {
-            updateRepeatButton();
-            createVisualizerBars();
-            
-            // 默认播放第一首
-            if (audioFiles.length > 0) {
-                playTrack(0);
-            }
-        });
+        updatePlaylist();
+        updateRepeatButton();
+        createVisualizerBars();
+        
+        // 默认播放第一首
+        if (audioFiles.length > 0) {
+            playTrack(0);
+        }
     </script>
 </body>
 </html>
+

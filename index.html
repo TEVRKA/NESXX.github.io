@@ -104,23 +104,14 @@
             justify-content: center;
             align-items: flex-end;
             gap: 5px;
+            position: relative;
         }
         
         .bar {
             width: 10px;
             background: linear-gradient(to top, #ff8a00, #e52e71);
             border-radius: 5px 5px 0 0;
-            transition: height 0.2s;
-        }
-        
-        .notes-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
+            transition: height 0.1s ease;
         }
         
         .note {
@@ -133,7 +124,7 @@
         @keyframes floatUp {
             0% {
                 transform: translateY(100px) rotate(0deg);
-                opacity: 1;
+                opacity: 0.8;
             }
             100% {
                 transform: translateY(-100px) rotate(360deg);
@@ -266,11 +257,6 @@
             opacity: 0.7;
         }
         
-        .playlist-item-duration {
-            opacity: 0.7;
-            font-size: 0.9rem;
-        }
-        
         .repeat-btn.active {
             color: #ff8a00;
         }
@@ -335,12 +321,10 @@
         <div class="player-container">
             <div class="song-info">
                 <h2 class="song-title">歌曲标题</h2>
-                <p class="song-artist">艺术家</p>
             </div>
             
             <div class="album-art">
                 <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="专辑封面">
-                <div class="notes-container" id="notesContainer"></div>
             </div>
             
             <div class="visualizer-container" id="visualizer">
@@ -391,105 +375,63 @@
     </div>
 
     <script>
-        // 音乐数据 - 包含您提供的所有歌曲
+        // 音乐数据 - 包含本地音频文件路径
         const songs = [
             {
-                title: "Håll om mig",
-                artist: "Nanne",
-                src: "audio/Håll om mig - Nanne.mp3",
-                cover: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:45"
+                title: "Håll om mig - Nanne",
+                src: "audio/Håll om mig - Nanne.mp3"
             },
             {
-                title: "IVORY TOWER",
-                artist: "澤野弘之, SennaRin",
-                src: "audio/IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3",
-                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "4:20"
+                title: "IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin",
+                src: "audio/IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3"
             },
             {
-                title: "MY ALL",
-                artist: "滨崎步",
-                src: "audio/MY ALL - 滨崎步.mp3",
-                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:15"
+                title: "MY ALL - 滨崎步",
+                src: "audio/MY ALL - 滨崎步.mp3"
             },
             {
-                title: "Rage Beneath the Mountains",
-                artist: "陈致逸, HOYO-MiX",
-                src: "audio/Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3",
-                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "4:05"
+                title: "Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX",
+                src: "audio/Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3"
             },
             {
-                title: "Take Me Hand",
-                artist: "DAISHI DANCE, Cécile Corbel",
-                src: "audio/Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3",
-                cover: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:50"
+                title: "Take Me Hand - DAISHI DANCE、Cécile Corbel",
+                src: "audio/Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3"
             },
             {
-                title: "The Mass",
-                artist: "Era",
-                src: "audio/The Mass (Album Version) - Era.mp3",
-                cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:30"
+                title: "The Mass (Album Version) - Era",
+                src: "audio/The Mass (Album Version) - Era.mp3"
             },
             {
                 title: "This Is It",
-                artist: "未知艺术家",
-                src: "audio/This Is It.mp3",
-                cover: "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:25"
+                src: "audio/This Is It.mp3"
             },
             {
-                title: "关山酒",
-                artist: "DJ名龙",
-                src: "audio/关山酒 (DJ名龙版).mp3",
-                cover: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "4:10"
+                title: "关山酒 (DJ名龙版)",
+                src: "audio/关山酒 (DJ名龙版).mp3"
             },
             {
                 title: "奇迹再现",
-                artist: "未知艺术家",
-                src: "audio/奇迹再现.mp3",
-                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:40"
+                src: "audio/奇迹再现.mp3"
             },
             {
-                title: "弱水三千",
-                artist: "未知艺术家",
-                src: "audio/弱水三千 (梨花飘落在你窗前).mp3",
-                cover: "https://images.unsplash.com/photo-1571974599782-87624638275f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "4:15"
+                title: "弱水三千 (梨花飘落在你窗前)",
+                src: "audio/弱水三千 (梨花飘落在你窗前).mp3"
             },
             {
-                title: "探故知",
-                artist: "超梦幻DJ版",
-                src: "audio/探故知 (超梦幻DJ版).mp3",
-                cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:55"
+                title: "探故知 (超梦幻DJ版)",
+                src: "audio/探故知 (超梦幻DJ版).mp3"
             },
             {
-                title: "沈园外",
-                artist: "DJ版",
-                src: "audio/沈园外 (DJ版).mp3",
-                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "4:00"
+                title: "沈园外 (DJ版)",
+                src: "audio/沈园外 (DJ版).mp3"
             },
             {
-                title: "游京",
-                artist: "燃情版",
-                src: "audio/游京 (燃情版).mp3",
-                cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:45"
+                title: "游京 (燃情版)",
+                src: "audio/游京 (燃情版).mp3"
             },
             {
                 title: "超兽武装",
-                artist: "未知艺术家",
-                src: "audio/超兽武装.mp3",
-                cover: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-                duration: "3:50"
+                src: "audio/超兽武装.mp3"
             }
         ];
 
@@ -511,7 +453,6 @@
         const albumArtEl = document.querySelector('.album-art');
         const albumArtImg = document.querySelector('.album-art img');
         const visualizerEl = document.getElementById('visualizer');
-        const notesContainer = document.getElementById('notesContainer');
 
         // 音频上下文和可视化
         let audioContext;
@@ -527,6 +468,15 @@
 
         // 初始化播放器
         function initPlayer() {
+            // 确保DOM元素存在
+            if (!playPauseBtn || !prevBtn || !nextBtn || !repeatBtn || !shuffleBtn || 
+                !progressBar || !progress || !currentTimeEl || !totalTimeEl || 
+                !volumeSlider || !playlistEl || !songTitleEl || !songArtistEl || 
+                !albumArtEl || !albumArtImg || !visualizerEl) {
+                console.error('DOM元素未找到');
+                return;
+            }
+            
             // 创建播放列表
             renderPlaylist();
             
@@ -554,9 +504,7 @@
                     <div class="playlist-item-index">${index + 1}</div>
                     <div class="playlist-item-info">
                         <div class="playlist-item-title">${song.title}</div>
-                        <div class="playlist-item-artist">${song.artist}</div>
                     </div>
-                    <div class="playlist-item-duration">${song.duration}</div>
                 `;
                 
                 li.addEventListener('click', () => {
@@ -586,31 +534,39 @@
         function loadSong(index) {
             const song = songs[index];
             audioPlayer.src = song.src;
-            songTitleEl.textContent = song.title;
-            songArtistEl.textContent = song.artist;
-            albumArtImg.src = song.cover;
+            if (songTitleEl) songTitleEl.textContent = song.title;
+            // 不显示艺术家名，只显示完整歌曲名称
+            if (songArtistEl) songArtistEl.textContent = '';
+            if (albumArtImg) {
+                // 使用默认专辑封面，因为没有为每个歌曲提供特定封面
+                albumArtImg.src = "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80";
+            }
             updatePlaylist();
         }
 
         // 播放歌曲
         function playSong() {
-            audioPlayer.play();
-            isPlaying = true;
-            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            playPauseBtn.title = "暂停";
-            albumArtEl.classList.add('playing');
-            
-            // 创建音符动画
-            createNoteAnimation();
+            audioPlayer.play().then(() => {
+                isPlaying = true;
+                if (playPauseBtn) {
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    playPauseBtn.title = "暂停";
+                }
+                if (albumArtEl) albumArtEl.classList.add('playing');
+            }).catch(e => {
+                console.error('播放失败:', e);
+            });
         }
 
         // 暂停歌曲
         function pauseSong() {
             audioPlayer.pause();
             isPlaying = false;
-            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            playPauseBtn.title = "播放";
-            albumArtEl.classList.remove('playing');
+            if (playPauseBtn) {
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                playPauseBtn.title = "播放";
+            }
+            if (albumArtEl) albumArtEl.classList.remove('playing');
         }
 
         // 切换播放/暂停
@@ -655,25 +611,27 @@
         // 切换单曲循环
         function toggleRepeat() {
             isRepeating = !isRepeating;
-            repeatBtn.classList.toggle('active', isRepeating);
+            if (repeatBtn) repeatBtn.classList.toggle('active', isRepeating);
             audioPlayer.loop = isRepeating;
         }
 
         // 切换随机播放
         function toggleShuffle() {
             isShuffling = !isShuffling;
-            shuffleBtn.classList.toggle('active', isShuffling);
+            if (shuffleBtn) shuffleBtn.classList.toggle('active', isShuffling);
         }
 
         // 更新进度条
         function updateProgress() {
             const { currentTime, duration } = audioPlayer;
-            const progressPercent = (currentTime / duration) * 100;
-            progress.style.width = `${progressPercent}%`;
+            if (progress) {
+                const progressPercent = (currentTime / duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+            }
             
             // 更新时间显示
-            currentTimeEl.textContent = formatTime(currentTime);
-            totalTimeEl.textContent = formatTime(duration);
+            if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
+            if (totalTimeEl) totalTimeEl.textContent = formatTime(duration);
         }
 
         // 设置进度
@@ -692,7 +650,7 @@
 
         // 格式化时间
         function formatTime(seconds) {
-            if (isNaN(seconds)) return '0:00';
+            if (isNaN(seconds) || seconds === undefined || seconds === null) return '0:00';
             
             const min = Math.floor(seconds / 60);
             const sec = Math.floor(seconds % 60);
@@ -702,41 +660,44 @@
         // 初始化音频可视化
         function initVisualizer() {
             // 创建音频上下文
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            source = audioContext.createMediaElementSource(audioPlayer);
-            
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            
-            analyser.fftSize = 256;
-            bufferLength = analyser.frequencyBinCount;
-            dataArray = new Uint8Array(bufferLength);
-            
-            // 创建可视化条
-            for (let i = 0; i < 40; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'bar';
-                visualizerEl.appendChild(bar);
-                bars.push(bar);
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                source = audioContext.createMediaElementSource(audioPlayer);
+                
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                analyser.fftSize = 256;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+                
+                // 创建可视化条
+                if (visualizerEl) {
+                    visualizerEl.innerHTML = ''; // 清空现有元素
+                    for (let i = 0; i < 64; i++) {
+                        const bar = document.createElement('div');
+                        bar.className = 'bar';
+                        bar.style.height = '5px';
+                        visualizerEl.appendChild(bar);
+                        bars.push(bar);
+                    }
+                }
+            } catch (e) {
+                console.error('Web Audio API is not supported in this browser', e);
             }
-            
-            // 开始可视化
-            visualize();
         }
 
         // 音频可视化
         function visualize() {
-            if (!isPlaying) {
-                requestAnimationFrame(visualize);
-                return;
-            }
+            if (!analyser || !bars.length) return;
             
             analyser.getByteFrequencyData(dataArray);
             
             for (let i = 0; i < bars.length; i++) {
                 const bar = bars[i];
-                const value = dataArray[i * Math.floor(bufferLength / bars.length)];
+                // 使用更平滑的频率数据
+                const value = dataArray[Math.min(i * 4, dataArray.length - 1)];
                 const height = Math.max(5, value / 2);
                 bar.style.height = `${height}px`;
                 
@@ -748,49 +709,25 @@
             requestAnimationFrame(visualize);
         }
 
-        // 创建音符动画
-        function createNoteAnimation() {
-            if (!isPlaying) return;
-            
-            const note = document.createElement('div');
-            note.className = 'note';
-            note.textContent = '♪';
-            note.style.left = `${Math.random() * 100}%`;
-            note.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
-            note.style.fontSize = `${Math.random() * 20 + 20}px`;
-            
-            notesContainer.appendChild(note);
-            
-            // 动画结束后移除元素
-            setTimeout(() => {
-                note.remove();
-            }, 3000);
-            
-            // 每隔一段时间创建新的音符
-            setTimeout(() => {
-                createNoteAnimation();
-            }, 200);
-        }
-
         // 设置事件监听器
         function setupEventListeners() {
             // 播放/暂停
-            playPauseBtn.addEventListener('click', togglePlayPause);
+            if (playPauseBtn) playPauseBtn.addEventListener('click', togglePlayPause);
             
             // 上一曲/下一曲
-            prevBtn.addEventListener('click', prevSong);
-            nextBtn.addEventListener('click', nextSong);
+            if (prevBtn) prevBtn.addEventListener('click', prevSong);
+            if (nextBtn) nextBtn.addEventListener('click', nextSong);
             
             // 进度条
             audioPlayer.addEventListener('timeupdate', updateProgress);
-            progressBar.addEventListener('click', setProgress);
+            if (progressBar) progressBar.addEventListener('click', setProgress);
             
             // 音量控制
-            volumeSlider.addEventListener('input', setVolume);
+            if (volumeSlider) volumeSlider.addEventListener('input', setVolume);
             
             // 循环和随机
-            repeatBtn.addEventListener('click', toggleRepeat);
-            shuffleBtn.addEventListener('click', toggleShuffle);
+            if (repeatBtn) repeatBtn.addEventListener('click', toggleRepeat);
+            if (shuffleBtn) shuffleBtn.addEventListener('click', toggleShuffle);
             
             // 歌曲结束
             audioPlayer.addEventListener('ended', () => {
@@ -801,12 +738,16 @@
             
             // 音频加载完成
             audioPlayer.addEventListener('loadedmetadata', () => {
-                totalTimeEl.textContent = formatTime(audioPlayer.duration);
+                if (totalTimeEl) totalTimeEl.textContent = formatTime(audioPlayer.duration);
+            });
+            
+            // 开始可视化
+            audioPlayer.addEventListener('play', () => {
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                visualize();
             });
         }
 
         // 初始化播放器
-        window.addEventListener('load', initPlayer);
-    </script>
-</body>
-</html>

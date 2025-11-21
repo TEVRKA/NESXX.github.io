@@ -219,6 +219,20 @@
                 justify-content: center;
             }
         }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -286,6 +300,24 @@
             "游京 （燃情版）.mp3"
         ];
 
+        // 歌曲元数据（标题和艺术家）
+        const songMetadata = [
+            { title: "Take Me Hand", artist: "DAISHI DANCE、Cécile Corbel" },
+            { title: "Håll om mig", artist: "Nanne" },
+            { title: "IVORY TOWER", artist: "澤野弘之、SennaRin" },
+            { title: "MY ALL", artist: "滨崎步" },
+            { title: "Rage Beneath the Mountains 岩壑之崩", artist: "陈致逸、HOYO-MiX" },
+            { title: "The Mass", artist: "Era" },
+            { title: "This Is It", artist: "" },
+            { title: "奇迹再现", artist: "" },
+            { title: "超兽武装", artist: "" },
+            { title: "关山酒（DJ名龙版）", artist: "" },
+            { title: "弱水三千 （梨花飘落在你窗前）", artist: "" },
+            { title: "沈园外（DJ版）", artist: "" },
+            { title: "探故知 （超梦幻DJ版）", artist: "" },
+            { title: "游京 （燃情版）", artist: "" }
+        ];
+
         // 播放模式：0-顺序播放，1-单曲循环，2-随机播放
         let playMode = 0; // 默认顺序播放
         const PLAY_MODES = {
@@ -312,6 +344,7 @@
         let currentTrack = 0;
         let animationId = null;
         let isPlaying = false;
+        let isLoading = false; // 标记是否正在加载
 
         // 创建音频上下文和分析器
         let audioContext = null;
@@ -385,20 +418,18 @@
             }
         }
 
-        // 从文件名中提取歌曲标题（去除扩展名）
-        function getSongTitle(filename) {
-            return filename.replace(/\.[^/.]+$/, ""); // 移除扩展名
-        }
-
         // 更新播放列表
         function updatePlaylist() {
             playlist.innerHTML = '';
             audioFiles.forEach((filename, index) => {
-                const title = getSongTitle(filename);
+                const song = songMetadata[index];
+                const title = song.title;
+                const artist = song.artist ? ` - ${song.artist}` : '';
+                
                 const item = document.createElement('div');
                 item.className = `playlist-item ${index === currentTrack ? 'active' : ''}`;
                 item.innerHTML = `
-                    <div class="playlist-item-title">${title}</div>
+                    <div class="playlist-item-title">${title}${artist}</div>
                 `;
                 item.addEventListener('click', () => playTrack(index));
                 playlist.appendChild(item);
@@ -502,10 +533,18 @@
         }
 
         // 播放指定曲目
-        function playTrack(index) {
+        async function playTrack(index) {
+            if (isLoading) return; // 如果正在加载，直接返回
+            
+            isLoading = true;
             currentTrack = index;
             const filename = audioFiles[index];
-            const title = getSongTitle(filename);
+            const song = songMetadata[index];
+            const title = song.title;
+            const artist = song.artist ? ` - ${song.artist}` : '';
+            
+            // 显示加载状态
+            nowPlaying.innerHTML = `正在加载: ${title}${artist} <span class="loading"></span>`;
             
             // 设置音频源
             audioPlayer.src = `audio/${encodeURIComponent(filename)}`;
@@ -513,11 +552,31 @@
             // 更新播放列表高亮
             updatePlaylist();
             
-            // 更新当前播放信息
-            nowPlaying.textContent = `正在播放: ${title}`;
-            
-            // 播放音频
-            audioPlayer.play().then(() => {
+            try {
+                // 预加载音频
+                audioPlayer.load();
+                
+                // 等待元数据加载完成
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => reject(new Error('加载超时')), 5000);
+                    
+                    audioPlayer.addEventListener('loadedmetadata', () => {
+                        clearTimeout(timeout);
+                        resolve();
+                    }, { once: true });
+                    
+                    audioPlayer.addEventListener('error', (e) => {
+                        clearTimeout(timeout);
+                        reject(e);
+                    }, { once: true });
+                });
+                
+                // 更新当前播放信息
+                nowPlaying.textContent = `正在播放: ${title}${artist}`;
+                
+                // 播放音频
+                await audioPlayer.play();
+                
                 // 初始化音频上下文（如果尚未初始化）
                 if (!audioContext) {
                     initAudioContext();
@@ -525,9 +584,14 @@
                 
                 // 开始可视化
                 startVisualizer();
-            }).catch(e => {
+            } catch (e) {
                 console.error('播放失败:', e);
-            });
+                nowPlaying.textContent = `播放失败: ${title}${artist}`;
+                isLoading = false;
+                return;
+            }
+            
+            isLoading = false;
         }
 
         // 播放下一首
@@ -535,9 +599,7 @@
             if (playMode === PLAY_MODES.LOOP) {
                 // 单曲循环：重新播放当前曲目
                 audioPlayer.currentTime = 0;
-                audioPlayer.play().then(() => {
-                    startVisualizer();
-                });
+                playTrack(currentTrack);
             } else {
                 // 顺序播放或随机播放：播放下一首
                 const nextIndex = getNextTrackIndex();
@@ -550,9 +612,7 @@
             if (audioPlayer.currentTime > 3) {
                 // 如果当前播放时间超过3秒，则重新播放当前曲目
                 audioPlayer.currentTime = 0;
-                audioPlayer.play().then(() => {
-                    startVisualizer();
-                });
+                playTrack(currentTrack);
             } else {
                 // 否则播放上一首
                 const prevIndex = getPrevTrackIndex();
@@ -561,18 +621,24 @@
         }
 
         // 事件监听器
-        playBtn.addEventListener('click', () => {
-            audioPlayer.play().then(() => {
-                // 初始化音频上下文（如果尚未初始化）
-                if (!audioContext) {
-                    initAudioContext();
+        playBtn.addEventListener('click', async () => {
+            if (isLoading) return;
+            
+            if (audioPlayer.paused) {
+                try {
+                    await audioPlayer.play();
+                    
+                    // 初始化音频上下文（如果尚未初始化）
+                    if (!audioContext) {
+                        initAudioContext();
+                    }
+                    
+                    // 开始可视化
+                    startVisualizer();
+                } catch (e) {
+                    console.error('播放失败:', e);
                 }
-                
-                // 开始可视化
-                startVisualizer();
-            }).catch(e => {
-                console.error('播放失败:', e);
-            });
+            }
         });
 
         pauseBtn.addEventListener('click', () => {
@@ -611,10 +677,7 @@
         audioPlayer.addEventListener('ended', () => {
             if (playMode === PLAY_MODES.LOOP) {
                 // 单曲循环：重新播放当前曲目
-                audioPlayer.currentTime = 0;
-                audioPlayer.play().then(() => {
-                    startVisualizer();
-                });
+                playTrack(currentTrack);
             } else {
                 // 顺序播放或随机播放：播放下一首
                 nextTrack();
@@ -623,11 +686,13 @@
 
         // 播放开始事件
         audioPlayer.addEventListener('play', () => {
+            isPlaying = true;
             startVisualizer();
         });
 
         // 播放暂停事件
         audioPlayer.addEventListener('pause', () => {
+            isPlaying = false;
             stopVisualizer();
         });
 
@@ -635,6 +700,11 @@
         updatePlaylist();
         updateRepeatButton();
         createVisualizerBars();
+        
+        // 默认播放第一首
+        if (audioFiles.length > 0) {
+            playTrack(0);
+        }
     </script>
 </body>
 </html>

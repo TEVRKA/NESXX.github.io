@@ -220,19 +220,7 @@
             }
         }
         
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        /* 移除了加载动画样式 */
         
         /* 新增：用于处理自动播放策略 */
         .interaction-required {
@@ -300,7 +288,7 @@
     <audio id="audioPlayer"></audio>
 
     <script>
-        //将Take Me Hand放在第一位置
+        // 将Take Me Hand放在第一位置
         const audioFiles = [
             "Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3",
             "Håll om mig - Nanne.mp3",
@@ -342,7 +330,7 @@
         const visualizer = document.getElementById('visualizer');
         const interactionRequired = document.getElementById('interactionRequired');
 
-        let currentTrack = 0;
+        let currentTrack = -1; // 当前播放的曲目索引，初始值为-1表示未选择
         let animationId = null;
         let isPlaying = false;
         let isLoading = false; // 标记是否正在加载
@@ -538,8 +526,8 @@
             currentTrack = index;
             const filename = audioFiles[index];
             
-            // 显示加载状态
-            nowPlaying.innerHTML = `正在加载: ${filename} <span class="loading"></span>`;
+            // 更新当前播放信息 - 直接显示正在播放
+            nowPlaying.textContent = `正在播放: ${filename}`;
             
             // 设置音频源 - 直接使用audio文件夹路径
             audioPlayer.src = `audio/${encodeURIComponent(filename)}`;
@@ -548,28 +536,7 @@
             updatePlaylist();
             
             try {
-                // 预加载音频
-                audioPlayer.load();
-                
-                // 等待元数据加载完成
-                await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('加载超时')), 10000); // 增加超时时间到10秒
-                    
-                    audioPlayer.addEventListener('loadedmetadata', () => {
-                        clearTimeout(timeout);
-                        resolve();
-                    }, { once: true });
-                    
-                    audioPlayer.addEventListener('error', (e) => {
-                        clearTimeout(timeout);
-                        reject(new Error(`音频加载错误: ${e.target.error?.message || '未知错误'}`));
-                    }, { once: true });
-                });
-                
-                // 更新当前播放信息
-                nowPlaying.textContent = `正在播放: ${filename}`;
-                
-                // 播放音频
+                // 直接尝试播放，不等待元数据加载
                 await audioPlayer.play();
                 
                 // 初始化音频上下文（如果尚未初始化）
@@ -624,10 +591,6 @@
             if (!userInteracted) {
                 userInteracted = true;
                 interactionRequired.classList.remove('show');
-                // 尝试播放第一首歌曲
-                if (audioFiles.length > 0) {
-                    playTrack(0);
-                }
             }
         }
 
@@ -723,12 +686,6 @@
             }
         });
 
-        // 页面加载完成后检查是否需要用户交互
-        window.addEventListener('load', () => {
-            // 添加一个简单的交互提示，比如点击播放按钮
-            // 或者等待用户点击任意按钮来启用播放
-        });
-
         // 添加全局点击事件监听器，以确保至少有一次用户交互
         document.addEventListener('click', handleUserInteraction, { once: true });
 
@@ -736,12 +693,6 @@
         updatePlaylist();
         updateRepeatButton();
         createVisualizerBars();
-        
-        // 不再默认播放第一首，等待用户交互
-        // 如果需要默认播放，请移除注释并取消注释以下行：
-        // if (audioFiles.length > 0) {
-        //     playTrack(0);
-        // }
     </script>
 </body>
 </html>

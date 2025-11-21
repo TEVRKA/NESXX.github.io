@@ -494,16 +494,20 @@
     };
 
     let playlist = [
-      { title: "Take Me Hand", artist: "DAISHI DANCE、Cécile Corbel", file: "audio/Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3" },
-      { title: "MY ALL", artist: "滨崎步", file: "audio/MY ALL - 滨崎步.mp3" },
-      { title: "The Mass (Album Version)", artist: "Era", file: "audio/The Mass (Album Version) - Era.mp3" },
-      { title: "This Is It", artist: "", file: "audio/This Is It.mp3" },
-      { title: "Håll om mig", artist: "Nanne", file: "audio/Håll om mig - Nanne.mp3" },
-      { title: "Rage Beneath the Mountains 岩壑之崩", artist: "陈致逸、HOYO-MiX", file: "audio/Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3" },
-      { title: "IVORY TOWER", artist: "(feat. SennaRin) - 澤野弘之、SennaRin", file: "audio/IVORY TOWER (feat. SennaRin) - 澤野弘之、SennaRin.mp3" },
-      { title: "奇迹再现", artist: "", file: "audio/奇迹再现.mp3" },
-      { title: "超兽武装", artist: "", file: "audio/超兽武装.mp3" }
-    ];
+  { title: "Take Me Hand", artist: "DAISHI DANCE、Cécile Corbel", file: "audio/Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3" },
+  { title: "MY ALL", artist: "滨崎步", file: "audio/MY ALL - 滨崎步.mp3" },
+  { title: "The Mass (Album Version)", artist: "Era", file: "audio/The Mass (Album Version) - Era.mp3" },
+  { title: "This Is It", artist: "", file: "audio/This Is It.mp3" },
+  { title: "Håll om mig", artist: "Nanne", file: "audio/Håll om mig - Nanne.mp3" },
+  { title: "Rage Beneath the Mountains 岩壑之崩", artist: "陈致逸、HOYO-MiX", file: "audio/Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3" },
+  { 
+    title: "IVORY TOWER", 
+    artist: "(feat. SennaRin) - 澤野弘之、SennaRin", 
+    file: "audio/" + encodeURIComponent("IVORY TOWER (feat. SennaRin) - 澤野弘之、SennaRin.mp3")
+  },
+  { title: "奇迹再现", artist: "", file: "audio/奇迹再现.mp3" },
+  { title: "超兽武装", artist: "", file: "audio/超兽武装.mp3" }
+];
 
     let current = 0, isPlaying = false, mode = 'order';
 
@@ -639,3 +643,4 @@
   </script>
 </body>
 </html>
+

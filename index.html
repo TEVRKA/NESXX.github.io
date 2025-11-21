@@ -147,16 +147,6 @@
             margin-bottom: 5px;
         }
 
-        .error-message {
-            color: #ff6b6b;
-            text-align: center;
-            padding: 10px;
-            margin-top: 20px;
-            border: 1px solid #ff6b6b;
-            border-radius: 5px;
-            display: none;
-        }
-
         .repeat-mode {
             display: flex;
             justify-content: center;
@@ -174,6 +164,40 @@
         .repeat-btn.active {
             background: #0b7dda;
             box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+
+        .visualizer {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 60px;
+            margin: 20px 0;
+            gap: 3px;
+        }
+
+        .bar {
+            width: 4px;
+            background: #4CAF50;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.1s ease;
+        }
+
+        .note {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0;
+            animation: floatUp 2s linear forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
         }
 
         @media (max-width: 600px) {
@@ -203,6 +227,10 @@
         
         <div class="player">
             <div class="now-playing" id="nowPlaying">请选择要播放的音乐</div>
+            
+            <div class="visualizer" id="visualizer">
+                <!-- 音频可视化条将通过JavaScript动态生成 -->
+            </div>
             
             <div class="progress-container">
                 <div class="progress-bar">
@@ -234,10 +262,6 @@
         
         <div class="playlist" id="playlist">
             <!-- 播放列表将通过JavaScript动态生成 -->
-        </div>
-        
-        <div class="error-message" id="errorMessage">
-            无法加载音乐文件，请检查audio文件夹中的音乐文件
         </div>
     </div>
 
@@ -278,10 +302,30 @@
         const totalTimeEl = document.getElementById('totalTime');
         const nowPlaying = document.getElementById('nowPlaying');
         const playlist = document.getElementById('playlist');
-        const errorMessage = document.getElementById('errorMessage');
-        const repeatBtn = document.getElementById('repeatBtn');
+        const visualizer = document.getElementById('visualizer');
 
         let currentTrack = 0;
+        let animationId = null;
+        let isPlaying = false;
+
+        // 创建音频上下文和分析器
+        let audioContext = null;
+        let analyser = null;
+        let source = null;
+        let dataArray = null;
+
+        // 初始化音频上下文
+        function initAudioContext() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+            } catch (e) {
+                console.error('无法初始化音频上下文:', e);
+            }
+        }
 
         // 格式化时间（秒转分:秒）
         function formatTime(seconds) {
@@ -356,6 +400,102 @@
             });
         }
 
+        // 创建可视化条
+        function createVisualizerBars() {
+            visualizer.innerHTML = '';
+            const barCount = 32; // 创建32个音柱
+            
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = '5px';
+                visualizer.appendChild(bar);
+            }
+        }
+
+        // 更新可视化效果
+        function updateVisualizer() {
+            if (!analyser || !dataArray) return;
+            
+            analyser.getByteFrequencyData(dataArray);
+            
+            const bars = visualizer.querySelectorAll('.bar');
+            const barCount = bars.length;
+            
+            for (let i = 0; i < barCount; i++) {
+                // 根据频率数据设置高度
+                const value = dataArray[i * (dataArray.length / barCount) | 0];
+                const height = value / 256 * 60 + 5; // 最小高度5px
+                bars[i].style.height = `${height}px`;
+                bars[i].style.backgroundColor = `hsl(${200 + value / 2}, 100%, 60%)`;
+            }
+            
+            // 继续动画循环
+            if (isPlaying) {
+                animationId = requestAnimationFrame(updateVisualizer);
+            }
+        }
+
+        // 创建浮动音符
+        function createFloatingNote() {
+            if (!isPlaying) return;
+            
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.textContent = ['♪', '♫', '♬', '♩'][Math.floor(Math.random() * 4)];
+            note.style.left = `${Math.random() * 100}%`;
+            note.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+            
+            document.querySelector('.player').appendChild(note);
+            
+            // 移除元素后清理DOM
+            setTimeout(() => {
+                if (note.parentNode) {
+                    note.parentNode.removeChild(note);
+                }
+            }, 2000);
+            
+            // 继续创建音符
+            if (isPlaying) {
+                setTimeout(createFloatingNote, Math.random() * 500 + 300);
+            }
+        }
+
+        // 开始可视化
+        function startVisualizer() {
+            if (audioContext && analyser) {
+                // 如果之前有源节点，先断开
+                if (source) {
+                    source.disconnect();
+                }
+                
+                // 创建新的源节点
+                source = audioContext.createMediaElementSource(audioPlayer);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                isPlaying = true;
+                animationId = requestAnimationFrame(updateVisualizer);
+                createFloatingNote();
+            }
+        }
+
+        // 停止可视化
+        function stopVisualizer() {
+            isPlaying = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            // 重置音柱高度
+            const bars = visualizer.querySelectorAll('.bar');
+            bars.forEach(bar => {
+                bar.style.height = '5px';
+                bar.style.backgroundColor = '#4CAF50';
+            });
+        }
+
         // 播放指定曲目
         function playTrack(index) {
             currentTrack = index;
@@ -372,9 +512,16 @@
             nowPlaying.textContent = `正在播放: ${title}`;
             
             // 播放音频
-            audioPlayer.play().catch(e => {
+            audioPlayer.play().then(() => {
+                // 初始化音频上下文（如果尚未初始化）
+                if (!audioContext) {
+                    initAudioContext();
+                }
+                
+                // 开始可视化
+                startVisualizer();
+            }).catch(e => {
                 console.error('播放失败:', e);
-                errorMessage.style.display = 'block';
             });
         }
 
@@ -383,7 +530,9 @@
             if (playMode === PLAY_MODES.LOOP) {
                 // 单曲循环：重新播放当前曲目
                 audioPlayer.currentTime = 0;
-                audioPlayer.play();
+                audioPlayer.play().then(() => {
+                    startVisualizer();
+                });
             } else {
                 // 顺序播放或随机播放：播放下一首
                 const nextIndex = getNextTrackIndex();
@@ -396,7 +545,9 @@
             if (audioPlayer.currentTime > 3) {
                 // 如果当前播放时间超过3秒，则重新播放当前曲目
                 audioPlayer.currentTime = 0;
-                audioPlayer.play();
+                audioPlayer.play().then(() => {
+                    startVisualizer();
+                });
             } else {
                 // 否则播放上一首
                 const prevIndex = getPrevTrackIndex();
@@ -406,14 +557,22 @@
 
         // 事件监听器
         playBtn.addEventListener('click', () => {
-            audioPlayer.play().catch(e => {
+            audioPlayer.play().then(() => {
+                // 初始化音频上下文（如果尚未初始化）
+                if (!audioContext) {
+                    initAudioContext();
+                }
+                
+                // 开始可视化
+                startVisualizer();
+            }).catch(e => {
                 console.error('播放失败:', e);
-                errorMessage.style.display = 'block';
             });
         });
 
         pauseBtn.addEventListener('click', () => {
             audioPlayer.pause();
+            stopVisualizer();
         });
 
         nextBtn.addEventListener('click', nextTrack);
@@ -448,46 +607,29 @@
             if (playMode === PLAY_MODES.LOOP) {
                 // 单曲循环：重新播放当前曲目
                 audioPlayer.currentTime = 0;
-                audioPlayer.play();
+                audioPlayer.play().then(() => {
+                    startVisualizer();
+                });
             } else {
                 // 顺序播放或随机播放：播放下一首
                 nextTrack();
             }
         });
 
+        // 播放开始事件
+        audioPlayer.addEventListener('play', () => {
+            startVisualizer();
+        });
+
+        // 播放暂停事件
+        audioPlayer.addEventListener('pause', () => {
+            stopVisualizer();
+        });
+
         // 初始化
         updatePlaylist();
         updateRepeatButton();
-
-        // 尝试加载音频文件以检查是否存在
-        function checkAudioFiles() {
-            let loadedCount = 0;
-            const totalCount = audioFiles.length;
-            
-            audioFiles.forEach(filename => {
-                const audio = new Audio();
-                audio.src = `audio/${encodeURIComponent(filename)}`;
-                
-                audio.addEventListener('loadeddata', () => {
-                    loadedCount++;
-                    if (loadedCount === totalCount) {
-                        // 所有文件都加载成功
-                        errorMessage.style.display = 'none';
-                    }
-                });
-                
-                audio.addEventListener('error', () => {
-                    console.error(`无法加载文件: audio/${filename}`);
-                    errorMessage.style.display = 'block';
-                });
-            });
-        }
-
-        // 延迟检查文件是否存在
-        setTimeout(checkAudioFiles, 1000);
+        createVisualizerBars();
     </script>
 </body>
 </html>
-
-
-

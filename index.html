@@ -16,45 +16,51 @@
             background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
             color: white;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 20px;
         }
 
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            width: 100%;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
         }
 
-        h1 {
+        .header {
             text-align: center;
             margin-bottom: 30px;
+        }
+
+        .header h1 {
             font-size: 2.5em;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
         .player {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(50, 50, 50, 0.8);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
         }
 
-        .now-playing {
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-
-        .controls {
+        .audio-controls {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         button {
@@ -64,11 +70,8 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 16px;
             transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         button:hover {
@@ -80,36 +83,27 @@
             cursor: not-allowed;
         }
 
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
+        .play-btn {
+            background: #2196F3;
         }
 
-        input[type="range"] {
-            flex: 1;
-            height: 5px;
-            border-radius: 5px;
-            background: #ddd;
-            outline: none;
+        .play-btn:hover {
+            background: #1976D2;
         }
 
         .progress-container {
-            margin-bottom: 15px;
+            width: 100%;
+            background: #333;
+            border-radius: 5px;
+            height: 10px;
+            cursor: pointer;
+            margin: 10px 0;
         }
 
         .progress-bar {
-            width: 100%;
-            height: 5px;
-            background: #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .progress {
             height: 100%;
             background: #4CAF50;
+            border-radius: 5px;
             width: 0%;
             transition: width 0.1s;
         }
@@ -117,582 +111,393 @@
         .time-info {
             display: flex;
             justify-content: space-between;
-            font-size: 0.9em;
-            color: #ccc;
-        }
-
-        .playlist {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .playlist-item {
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .playlist-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .playlist-item.active {
-            background: rgba(76, 175, 80, 0.3);
-            font-weight: bold;
-        }
-
-        .playlist-item-title {
-            font-size: 1.1em;
-            margin-bottom: 5px;
-        }
-
-        .repeat-mode {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            font-size: 0.9em;
-        }
-
-        .repeat-btn {
-            background: #2196F3;
-            padding: 5px 10px;
-        }
-
-        .repeat-btn.active {
-            background: #0b7dda;
-            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+            width: 100%;
+            font-size: 14px;
         }
 
         .visualizer {
+            height: 100px;
             display: flex;
-            justify-content: center;
             align-items: flex-end;
-            height: 60px;
+            justify-content: center;
+            gap: 2px;
             margin: 20px 0;
-            gap: 3px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
         }
 
         .bar {
             width: 4px;
             background: #4CAF50;
             border-radius: 2px 2px 0 0;
-            transition: height 0.1s ease;
+            transition: height 0.1s;
+        }
+
+        .notes-container {
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin: 10px 0;
         }
 
         .note {
             position: absolute;
+            bottom: 0;
             font-size: 24px;
-            opacity: 0;
-            animation: floatUp 2s linear forwards;
+            animation: float 3s linear infinite;
+            opacity: 0.8;
         }
 
-        @keyframes floatUp {
+        @keyframes float {
             0% {
-                transform: translateY(0);
-                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.8;
             }
             100% {
-                transform: translateY(-100px);
+                transform: translateY(-100px) rotate(360deg);
                 opacity: 0;
             }
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            button {
-                width: 100%;
-                justify-content: center;
-            }
+        .playlist {
+            margin-top: 20px;
         }
-        
-        /* 移除了加载动画样式 */
-        
-        /* 新增：用于处理自动播放策略 */
-        .interaction-required {
+
+        .playlist h3 {
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .song-item {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .song-item:hover {
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .song-item.active {
+            background: rgba(76, 175, 80, 0.4);
+            border-color: #4CAF50;
+        }
+
+        .current-song {
             text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 0, 0.2);
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .interaction-required.show {
-            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>🎵 个人音乐空间 🎵</h1>
+    </div>
+
     <div class="container">
-        <h1>🎵 个人音乐空间</h1>
-        
-        <div class="interaction-required" id="interactionRequired">
-            请先点击任意按钮以允许音频播放（浏览器自动播放策略）
-        </div>
-        
         <div class="player">
-            <div class="now-playing" id="nowPlaying">请选择要播放的音乐</div>
+            <div class="current-song" id="currentSong">请选择一首歌曲</div>
             
-            <div class="visualizer" id="visualizer">
-                <!-- 音频可视化条将通过JavaScript动态生成 -->
-            </div>
-            
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress" id="progress"></div>
+            <div class="audio-controls">
+                <div class="controls-row">
+                    <button id="prevBtn" class="play-btn">⏮️ 上一首</button>
+                    <button id="playBtn" class="play-btn">▶️ 播放</button>
+                    <button id="nextBtn" class="play-btn">⏭️ 下一首</button>
                 </div>
-                <div class="time-info">
-                    <span id="currentTime">00:00</span>
-                    <span id="totalTime">00:00</span>
+                
+                <div class="controls-row">
+                    <button id="loopBtn">🔄 单曲循环</button>
+                    <button id="shuffleBtn">🔀 随机播放</button>
                 </div>
             </div>
-            
-            <div class="controls">
-                <button id="prevBtn">⏮️ 上一首</button>
-                <button id="playBtn">▶️ 播放</button>
-                <button id="pauseBtn">⏸️ 暂停</button>
-                <button id="nextBtn">⏭️ 下一首</button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
             </div>
             
-            <div class="repeat-mode">
-                <button id="repeatBtn" class="repeat-btn">🔁 顺序播放</button>
+            <div class="time-info">
+                <span id="currentTime">00:00</span>
+                <span id="totalTime">00:00</span>
             </div>
+
+            <div class="visualizer" id="visualizer"></div>
             
-            <div class="volume-control">
-                <span>🔊</span>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
-                <span id="volumeValue">70%</span>
-            </div>
+            <div class="notes-container" id="notesContainer"></div>
         </div>
-        
-        <div class="playlist" id="playlist">
-            <!-- 播放列表将通过JavaScript动态生成 -->
+
+        <div class="playlist">
+            <h3>播放列表</h3>
+            <div id="playlist"></div>
         </div>
     </div>
 
     <audio id="audioPlayer"></audio>
 
     <script>
-        // 将Take Me Hand放在第一位置
-        const audioFiles = [
-            "Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3",
-            "Håll om mig - Nanne.mp3",
-            "IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3",
-            "MY ALL - 滨崎步.mp3",
-            "Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3",
-            "The Mass (Album Version) - Era.mp3",
-            "This Is It.mp3",
-            "奇迹再现.mp3",
-            "超兽武装.mp3",
-            "关山酒（DJ名龙版）.mp3",
-            "弱水三千 （梨花飘落在你窗前）.mp3",
-            "沈园外（DJ版）.mp3",
-            "探故知 （超梦幻DJ版）.mp3",
-            "游京 （燃情版）.mp3"
-        ];
+        class MusicPlayer {
+            constructor() {
+                this.audio = document.getElementById('audioPlayer');
+                this.playBtn = document.getElementById('playBtn');
+                this.prevBtn = document.getElementById('prevBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.loopBtn = document.getElementById('loopBtn');
+                this.shuffleBtn = document.getElementById('shuffleBtn');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressContainer = document.getElementById('progressContainer');
+                this.currentTimeEl = document.getElementById('currentTime');
+                this.totalTimeEl = document.getElementById('totalTime');
+                this.visualizer = document.getElementById('visualizer');
+                this.notesContainer = document.getElementById('notesContainer');
+                this.playlistEl = document.getElementById('playlist');
+                this.currentSongEl = document.getElementById('currentSong');
 
-        // 播放模式：0-顺序播放，1-单曲循环，2-随机播放
-        let playMode = 0; // 默认顺序播放
-        const PLAY_MODES = {
-            ORDER: 0,
-            LOOP: 1,
-            SHUFFLE: 2
-        };
+                this.songs = [];
+                this.currentSongIndex = -1;
+                this.isPlaying = false;
+                this.isLooping = false;
+                this.isShuffled = false;
+                this.audioContext = null;
+                this.analyser = null;
+                this.audioData = null;
+                this.animationId = null;
 
-        // DOM元素
-        const audioPlayer = document.getElementById('audioPlayer');
-        const playBtn = document.getElementById('playBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeValue = document.getElementById('volumeValue');
-        const progress = document.getElementById('progress');
-        const currentTimeEl = document.getElementById('currentTime');
-        const totalTimeEl = document.getElementById('totalTime');
-        const nowPlaying = document.getElementById('nowPlaying');
-        const playlist = document.getElementById('playlist');
-        const visualizer = document.getElementById('visualizer');
-        const interactionRequired = document.getElementById('interactionRequired');
-
-        let currentTrack = -1; // 当前播放的曲目索引，初始值为-1表示未选择
-        let animationId = null;
-        let isPlaying = false;
-        let isLoading = false; // 标记是否正在加载
-        let userInteracted = false; // 用户是否已与页面交互
-
-        // 创建音频上下文和分析器
-        let audioContext = null;
-        let analyser = null;
-        let source = null;
-        let dataArray = null;
-
-        // 初始化音频上下文
-        function initAudioContext() {
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 256;
-                const bufferLength = analyser.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
-            } catch (e) {
-                console.error('无法初始化音频上下文:', e);
+                this.init();
             }
-        }
 
-        // 格式化时间（秒转分:秒）
-        function formatTime(seconds) {
-            const min = Math.floor(seconds / 60);
-            const sec = Math.floor(seconds % 60);
-            return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-        }
-
-        // 更新播放模式按钮显示
-        function updateRepeatButton() {
-            switch(playMode) {
-                case PLAY_MODES.ORDER:
-                    repeatBtn.textContent = '🔁 顺序播放';
-                    break;
-                case PLAY_MODES.LOOP:
-                    repeatBtn.textContent = '🔂 单曲循环';
-                    break;
-                case PLAY_MODES.SHUFFLE:
-                    repeatBtn.textContent = '🔀 随机播放';
-                    break;
+            init() {
+                this.setupEventListeners();
+                this.createVisualizerBars();
+                this.loadSongsFromAudioFolder();
             }
-            repeatBtn.classList.toggle('active', playMode !== PLAY_MODES.ORDER);
-        }
 
-        // 获取下一首歌曲索引
-        function getNextTrackIndex() {
-            if (playMode === PLAY_MODES.SHUFFLE) {
-                // 随机播放：随机选择下一首（不能是当前这首）
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * audioFiles.length);
-                } while (newIndex === currentTrack && audioFiles.length > 1);
-                return newIndex;
-            } else {
-                // 顺序播放或单曲循环
-                return (currentTrack + 1) % audioFiles.length;
-            }
-        }
-
-        // 获取上一首歌曲索引
-        function getPrevTrackIndex() {
-            if (playMode === PLAY_MODES.SHUFFLE) {
-                // 随机播放：随机选择上一首（不能是当前这首）
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * audioFiles.length);
-                } while (newIndex === currentTrack && audioFiles.length > 1);
-                return newIndex;
-            } else {
-                // 顺序播放或单曲循环
-                return (currentTrack - 1 + audioFiles.length) % audioFiles.length;
-            }
-        }
-
-        // 更新播放列表
-        function updatePlaylist() {
-            playlist.innerHTML = '';
-            audioFiles.forEach((filename, index) => {
-                const item = document.createElement('div');
-                item.className = `playlist-item ${index === currentTrack ? 'active' : ''}`;
-                item.innerHTML = `
-                    <div class="playlist-item-title">${filename}</div>
-                `;
-                item.addEventListener('click', () => playTrack(index));
-                playlist.appendChild(item);
-            });
-        }
-
-        // 创建可视化条
-        function createVisualizerBars() {
-            visualizer.innerHTML = '';
-            const barCount = 32; // 创建32个音柱
-            
-            for (let i = 0; i < barCount; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'bar';
-                bar.style.height = '5px';
-                visualizer.appendChild(bar);
-            }
-        }
-
-        // 更新可视化效果
-        function updateVisualizer() {
-            if (!analyser || !dataArray) return;
-            
-            analyser.getByteFrequencyData(dataArray);
-            
-            const bars = visualizer.querySelectorAll('.bar');
-            const barCount = bars.length;
-            
-            for (let i = 0; i < barCount; i++) {
-                // 根据频率数据设置高度
-                const value = dataArray[i * (dataArray.length / barCount) | 0];
-                const height = value / 256 * 60 + 5; // 最小高度5px
-                bars[i].style.height = `${height}px`;
-                bars[i].style.backgroundColor = `hsl(${200 + value / 2}, 100%, 60%)`;
-            }
-            
-            // 继续动画循环
-            if (isPlaying) {
-                animationId = requestAnimationFrame(updateVisualizer);
-            }
-        }
-
-        // 创建浮动音符
-        function createFloatingNote() {
-            if (!isPlaying) return;
-            
-            const note = document.createElement('div');
-            note.className = 'note';
-            note.textContent = ['♪', '♫', '♬', '♩'][Math.floor(Math.random() * 4)];
-            note.style.left = `${Math.random() * 100}%`;
-            note.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
-            
-            document.querySelector('.player').appendChild(note);
-            
-            // 移除元素后清理DOM
-            setTimeout(() => {
-                if (note.parentNode) {
-                    note.parentNode.removeChild(note);
-                }
-            }, 2000);
-            
-            // 继续创建音符
-            if (isPlaying) {
-                setTimeout(createFloatingNote, Math.random() * 500 + 300);
-            }
-        }
-
-        // 开始可视化
-        function startVisualizer() {
-            if (audioContext && analyser) {
-                // 如果之前有源节点，先断开
-                if (source) {
-                    source.disconnect();
-                }
+            setupEventListeners() {
+                this.playBtn.addEventListener('click', () => this.togglePlay());
+                this.prevBtn.addEventListener('click', () => this.playPrev());
+                this.nextBtn.addEventListener('click', () => this.playNext());
+                this.loopBtn.addEventListener('click', () => this.toggleLoop());
+                this.shuffleBtn.addEventListener('click', () => this.toggleShuffle());
                 
-                // 创建新的源节点
-                source = audioContext.createMediaElementSource(audioPlayer);
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
+                this.audio.addEventListener('timeupdate', () => this.updateProgress());
+                this.audio.addEventListener('ended', () => this.onSongEnd());
+                this.audio.addEventListener('loadedmetadata', () => this.updateTotalTime());
                 
-                isPlaying = true;
-                animationId = requestAnimationFrame(updateVisualizer);
-                createFloatingNote();
+                this.progressContainer.addEventListener('click', (e) => this.seek(e));
             }
-        }
 
-        // 停止可视化
-        function stopVisualizer() {
-            isPlaying = false;
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-            
-            // 重置音柱高度
-            const bars = visualizer.querySelectorAll('.bar');
-            bars.forEach(bar => {
-                bar.style.height = '5px';
-                bar.style.backgroundColor = '#4CAF50';
-            });
-        }
-
-        // 播放指定曲目
-        async function playTrack(index) {
-            if (isLoading) return; // 如果正在加载，直接返回
-            
-            isLoading = true;
-            currentTrack = index;
-            const filename = audioFiles[index];
-            
-            // 更新当前播放信息 - 直接显示正在播放
-            nowPlaying.textContent = `正在播放: ${filename}`;
-            
-            // 设置音频源 - 直接使用audio文件夹路径
-            audioPlayer.src = `audio/${encodeURIComponent(filename)}`;
-            
-            // 更新播放列表高亮
-            updatePlaylist();
-            
-            try {
-                // 直接尝试播放，不等待元数据加载
-                await audioPlayer.play();
-                
-                // 初始化音频上下文（如果尚未初始化）
-                if (!audioContext) {
-                    initAudioContext();
+            createVisualizerBars() {
+                this.visualizer.innerHTML = '';
+                for (let i = 0; i < 64; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = '2px';
+                    this.visualizer.appendChild(bar);
                 }
+            }
+
+            loadSongsFromAudioFolder() {
+                this.songs = [
+                    { name: 'Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3' },
+                    { name: 'Håll om mig - Nanne.mp3' },
+                    { name: 'IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3' },
+                    { name: 'MY ALL - 滨崎步.mp3' },
+                    { name: 'Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3' },
+                    { name: 'The Mass (Album Version) - Era.mp3' },
+                    { name: 'This Is It.mp3' },
+                    { name: '关山酒 (DJ名龙版).mp3' },
+                    { name: '奇迹再现.mp3' },
+                    { name: '弱水三千 (梨花飘落在你窗前).mp3' },
+                    { name: '探故知 (超梦幻DJ版).mp3' },
+                    { name: '沈园外 (DJ版).mp3' },
+                    { name: '游京 (燃情版).mp3' },
+                    { name: '超兽武装.mp3' }
+                ];
+                this.songs.forEach((song, index) => {
+                    song.url = `audio/${encodeURIComponent(song.name)}`;
+                });
                 
-                // 开始可视化
-                startVisualizer();
-            } catch (e) {
-                console.error('播放失败:', e);
-                // 移除播放失败提示
-                // 只在用户交互后才尝试播放，避免自动播放限制
-                if (!userInteracted) {
-                    interactionRequired.classList.add('show');
-                }
-                isLoading = false;
-                return;
+                this.renderPlaylist();
             }
-            
-            isLoading = false;
-        }
 
-        // 播放下一首
-        function nextTrack() {
-            if (playMode === PLAY_MODES.LOOP) {
-                // 单曲循环：重新播放当前曲目
-                audioPlayer.currentTime = 0;
-                playTrack(currentTrack);
-            } else {
-                // 顺序播放或随机播放：播放下一首
-                const nextIndex = getNextTrackIndex();
-                playTrack(nextIndex);
-            }
-        }
-
-        // 播放上一首
-        function prevTrack() {
-            if (audioPlayer.currentTime > 3) {
-                // 如果当前播放时间超过3秒，则重新播放当前曲目
-                audioPlayer.currentTime = 0;
-                playTrack(currentTrack);
-            } else {
-                // 否则播放上一首
-                const prevIndex = getPrevTrackIndex();
-                playTrack(prevIndex);
-            }
-        }
-
-        // 处理用户交互事件
-        function handleUserInteraction() {
-            if (!userInteracted) {
-                userInteracted = true;
-                interactionRequired.classList.remove('show');
-            }
-        }
-
-        // 事件监听器
-        playBtn.addEventListener('click', async () => {
-            if (isLoading) return;
-            
-            // 处理用户交互
-            handleUserInteraction();
-            
-            if (audioPlayer.paused) {
-                try {
-                    await audioPlayer.play();
-                    
-                    // 初始化音频上下文（如果尚未初始化）
-                    if (!audioContext) {
-                        initAudioContext();
+            renderPlaylist() {
+                this.playlistEl.innerHTML = '';
+                this.songs.forEach((song, index) => {
+                    const songItem = document.createElement('div');
+                    songItem.className = 'song-item';
+                    songItem.textContent = song.name;
+                    if (index === this.currentSongIndex) {
+                        songItem.classList.add('active');
                     }
-                    
-                    // 开始可视化
-                    startVisualizer();
-                } catch (e) {
+                    songItem.addEventListener('click', () => this.playSong(index));
+                    this.playlistEl.appendChild(songItem);
+                });
+            }
+
+            playSong(index) {
+                if (index < 0 || index >= this.songs.length) return;
+
+                this.currentSongIndex = index;
+                const song = this.songs[index];
+                
+                // 构建音频文件的实际路径
+                this.audio.src = song.url;
+                this.currentSongEl.textContent = `正在播放: ${song.name}`;
+                
+                this.renderPlaylist();
+                this.audio.play().then(() => {
+                    this.isPlaying = true;
+                    this.playBtn.textContent = '⏸️ 暂停';
+                    this.setupAudioContext();
+                    this.startVisualization();
+                }).catch(e => {
                     console.error('播放失败:', e);
-                    // 移除播放失败提示
-                    if (!userInteracted) {
-                        interactionRequired.classList.add('show');
-                    }
+                    alert(`无法播放歌曲: ${song.name}\n请确保audio文件夹中存在该文件`);
+                });
+            }
+
+            togglePlay() {
+                if (this.currentSongIndex === -1 && this.songs.length > 0) {
+                    this.playSong(0);
+                    return;
+                }
+
+                if (this.isPlaying) {
+                    this.audio.pause();
+                    this.isPlaying = false;
+                    this.playBtn.textContent = '▶️ 播放';
+                    this.stopVisualization();
+                } else {
+                    this.audio.play();
+                    this.isPlaying = true;
+                    this.playBtn.textContent = '⏸️ 暂停';
+                    this.setupAudioContext();
+                    this.startVisualization();
                 }
             }
-        });
 
-        pauseBtn.addEventListener('click', () => {
-            audioPlayer.pause();
-            stopVisualizer();
-        });
-
-        nextBtn.addEventListener('click', nextTrack);
-        prevBtn.addEventListener('click', prevTrack);
-
-        // 切换播放模式
-        repeatBtn.addEventListener('click', () => {
-            playMode = (playMode + 1) % 3; // 循环切换三种模式
-            updateRepeatButton();
-        });
-
-        // 音量控制
-        volumeSlider.addEventListener('input', () => {
-            audioPlayer.volume = volumeSlider.value;
-            volumeValue.textContent = `${Math.round(volumeSlider.value * 100)}%`;
-        });
-
-        // 进度条更新
-        audioPlayer.addEventListener('timeupdate', () => {
-            const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-            progress.style.width = `${percent}%`;
-            currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
-        });
-
-        // 总时长更新
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            totalTimeEl.textContent = formatTime(audioPlayer.duration);
-        });
-
-        // 播放结束事件处理
-        audioPlayer.addEventListener('ended', () => {
-            if (playMode === PLAY_MODES.LOOP) {
-                // 单曲循环：重新播放当前曲目
-                playTrack(currentTrack);
-            } else {
-                // 顺序播放或随机播放：播放下一首
-                nextTrack();
+            playPrev() {
+                let newIndex = this.currentSongIndex - 1;
+                if (newIndex < 0) {
+                    newIndex = this.isShuffled ? Math.floor(Math.random() * this.songs.length) : this.songs.length - 1;
+                }
+                this.playSong(newIndex);
             }
-        });
 
-        // 播放开始事件
-        audioPlayer.addEventListener('play', () => {
-            isPlaying = true;
-            startVisualizer();
-        });
-
-        // 播放暂停事件
-        audioPlayer.addEventListener('pause', () => {
-            isPlaying = false;
-            stopVisualizer();
-        });
-
-        // 音频错误处理
-        audioPlayer.addEventListener('error', (e) => {
-            console.error('音频播放错误:', e);
-            // 移除播放失败提示
-            if (!userInteracted) {
-                interactionRequired.classList.add('show');
+            playNext() {
+                let newIndex = this.currentSongIndex + 1;
+                if (newIndex >= this.songs.length) {
+                    newIndex = this.isShuffled ? Math.floor(Math.random() * this.songs.length) : 0;
+                }
+                this.playSong(newIndex);
             }
-        });
 
-        // 添加全局点击事件监听器，以确保至少有一次用户交互
-        document.addEventListener('click', handleUserInteraction, { once: true });
+            toggleLoop() {
+                this.isLooping = !this.isLooping;
+                this.audio.loop = this.isLooping;
+                this.loopBtn.textContent = this.isLooping ? '🔄 单曲循环(开)' : '🔄 单曲循环(关)';
+            }
 
-        // 初始化
-        updatePlaylist();
-        updateRepeatButton();
-        createVisualizerBars();
-    </script>
-</body>
-</html>
+            toggleShuffle() {
+                this.isShuffled = !this.isShuffled;
+                this.shuffleBtn.textContent = this.isShuffled ? '🔀 随机播放(开)' : '🔀 随机播放(关)';
+            }
+
+            updateProgress() {
+                const percent = (this.audio.currentTime / this.audio.duration) * 100;
+                this.progressBar.style.width = `${percent}%`;
+                this.currentTimeEl.textContent = this.formatTime(this.audio.currentTime);
+            }
+
+            updateTotalTime() {
+                this.totalTimeEl.textContent = this.formatTime(this.audio.duration);
+            }
+
+            formatTime(seconds) {
+                if (isNaN(seconds)) return '00:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            seek(e) {
+                const width = this.progressContainer.clientWidth;
+                const clickX = e.offsetX;
+                const duration = this.audio.duration;
+                this.audio.currentTime = (clickX / width) * duration;
+            }
+
+            onSongEnd() {
+                if (this.isLooping) {
+                    this.audio.currentTime = 0;
+                    this.audio.play();
+                } else {
+                    this.playNext();
+                }
+            }
+
+            setupAudioContext() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioContext.createAnalyser();
+                    const source = this.audioContext.createMediaElementSource(this.audio);
+                    source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                    this.analyser.fftSize = 128;
+                    this.audioData = new Uint8Array(this.analyser.frequencyBinCount);
+                }
+            }
+
+            startVisualization() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                this.animateVisualizer();
+            }
+
+            stopVisualization() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                // 重置音柱
+                const bars = this.visualizer.querySelectorAll('.bar');
+                bars.forEach(bar => {
+                    bar.style.height = '2px';
+                });
+            }
+
+            animateVisualizer() {
+                if (!this.analyser || !this.audioData) return;
+
+                this.analyser.getByteFrequencyData(this.audioData);
+                
+                const bars = this.visualizer.querySelectorAll('.bar');
+                for (let i = 0; i < bars.length && i < this.audioData.length; i++) {
+                    const value = this.audioData[i];
+                    const height = (value / 255) * 80 + 2; // 最小高度2px
+                    bars[i].style.height = `${height}px`;
+                }
+
+                // 随机生成音符
+                if (Math.random() < 0.3) {
+                    this.createNote();
+                }
+
+                this.animationId = requestAnimationFrame(() => this.animateVisualizer());
+            }
+
+            createNote() {
+                const notes = ['♪', '♫', '♭', '♪', '♫'];
+                const note = document.createElement('div');
+                note.className = 'note';
+                note.textContent = notes[Math.floor(Math.random() * notes.length)];
+                note.style.left = `${Math.random() * 100}%`;
+                note.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                note.style.fontSize = `${Math.random() * 20 + 16}px`;

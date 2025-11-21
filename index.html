@@ -147,11 +147,6 @@
             margin-bottom: 5px;
         }
 
-        .playlist-item-info {
-            font-size: 0.9em;
-            color: #ccc;
-        }
-
         .error-message {
             color: #ff6b6b;
             text-align: center;
@@ -249,17 +244,17 @@
     <audio id="audioPlayer"></audio>
 
     <script>
-        // 音乐文件列表 - 已将"Take Me Hand"放在第一位置
+        // 音乐文件列表 - 只显示文件名，移除艺术家和时长信息
         const audioFiles = [
-            { title: "Take Me Hand", filename: "Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3", artist: "DAISHI DANCE、Cécile Corbel", duration: "未知" },
-            { title: "Håll om mig", filename: "Håll om mig - Nanne.mp3", artist: "Nanne", duration: "未知" },
-            { title: "IVORY TOWER", filename: "IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3", artist: "澤野弘之、SennaRin", duration: "未知" },
-            { title: "MY ALL", filename: "MY ALL - 滨崎步.mp3", artist: "滨崎步", duration: "未知" },
-            { title: "Rage Beneath the Mountains 岩壑之崩", filename: "Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3", artist: "陈致逸、HOYO-MiX", duration: "未知" },
-            { title: "The Mass", filename: "The Mass (Album Version) - Era.mp3", artist: "Era", duration: "未知" },
-            { title: "This Is It", filename: "This Is It.mp3", artist: "未知艺术家", duration: "未知" },
-            { title: "奇迹再现", filename: "奇迹再现.mp3", artist: "未知艺术家", duration: "未知" },
-            { title: "超兽武装", filename: "超兽武装.mp3", artist: "未知艺术家", duration: "未知" }
+            "Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3",
+            "Håll om mig - Nanne.mp3",
+            "IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3",
+            "MY ALL - 滨崎步.mp3",
+            "Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3",
+            "The Mass (Album Version) - Era.mp3",
+            "This Is It.mp3",
+            "奇迹再现.mp3",
+            "超兽武装.mp3"
         ];
 
         // 播放模式：0-顺序播放，1-单曲循环，2-随机播放
@@ -341,15 +336,20 @@
             }
         }
 
+        // 从文件名中提取歌曲标题（去除扩展名）
+        function getSongTitle(filename) {
+            return filename.replace(/\.[^/.]+$/, ""); // 移除扩展名
+        }
+
         // 更新播放列表
         function updatePlaylist() {
             playlist.innerHTML = '';
-            audioFiles.forEach((file, index) => {
+            audioFiles.forEach((filename, index) => {
+                const title = getSongTitle(filename);
                 const item = document.createElement('div');
                 item.className = `playlist-item ${index === currentTrack ? 'active' : ''}`;
                 item.innerHTML = `
-                    <div class="playlist-item-title">${file.title}</div>
-                    <div class="playlist-item-info">${file.artist} • ${file.duration}</div>
+                    <div class="playlist-item-title">${title}</div>
                 `;
                 item.addEventListener('click', () => playTrack(index));
                 playlist.appendChild(item);
@@ -359,16 +359,17 @@
         // 播放指定曲目
         function playTrack(index) {
             currentTrack = index;
-            const file = audioFiles[index];
+            const filename = audioFiles[index];
+            const title = getSongTitle(filename);
             
             // 设置音频源
-            audioPlayer.src = `audio/${encodeURIComponent(file.filename)}`;
+            audioPlayer.src = `audio/${encodeURIComponent(filename)}`;
             
             // 更新播放列表高亮
             updatePlaylist();
             
             // 更新当前播放信息
-            nowPlaying.textContent = `正在播放: ${file.title} - ${file.artist}`;
+            nowPlaying.textContent = `正在播放: ${title}`;
             
             // 播放音频
             audioPlayer.play().catch(e => {
@@ -463,9 +464,9 @@
             let loadedCount = 0;
             const totalCount = audioFiles.length;
             
-            audioFiles.forEach(file => {
+            audioFiles.forEach(filename => {
                 const audio = new Audio();
-                audio.src = `audio/${encodeURIComponent(file.filename)}`;
+                audio.src = `audio/${encodeURIComponent(filename)}`;
                 
                 audio.addEventListener('loadeddata', () => {
                     loadedCount++;
@@ -476,7 +477,7 @@
                 });
                 
                 audio.addEventListener('error', () => {
-                    console.error(`无法加载文件: audio/${file.filename}`);
+                    console.error(`无法加载文件: audio/${filename}`);
                     errorMessage.style.display = 'block';
                 });
             });

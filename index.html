@@ -17,12 +17,15 @@
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 10; /* 保证内容在音符之上或之中，视需求而定，这里设为10保证可交互 */
         }
 
         header {
@@ -43,6 +46,8 @@
             padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 20; /* 播放器在音符之上 */
         }
 
         .visualizer {
@@ -55,6 +60,7 @@
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
+            overflow: hidden; /* 防止条状图溢出 */
         }
 
         .bar {
@@ -64,39 +70,46 @@
             transition: height 0.1s ease;
         }
 
-        .notes {
-            position: absolute;
+        /* --- 全屏音符特效样式 --- */
+        #fullscreen-notes {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100px;
-            pointer-events: none;
+            height: 100%;
+            pointer-events: none; /* 让鼠标点击穿透音符，不影响操作 */
+            z-index: 1; 
+            overflow: hidden;
         }
 
         .note {
             position: absolute;
-            color: #00c6ff;
-            font-size: 20px;
+            color: rgba(255, 255, 255, 0.6); /* 半透明白色 */
+            font-size: 24px;
+            bottom: -50px; /* 从屏幕下方开始 */
             opacity: 0;
-            animation: float 3s linear infinite;
+            animation: floatUp linear forwards; /* linear匀速，forwards保持结束状态 */
+            text-shadow: 0 0 5px #00c6ff;
         }
 
-        @keyframes float {
+        @keyframes floatUp {
             0% {
-                transform: translateY(100px) translateX(0);
+                transform: translateY(0) rotate(0deg);
                 opacity: 0;
             }
             10% {
-                opacity: 1;
+                opacity: 0.8;
             }
-            90% {
-                opacity: 1;
+            80% {
+                opacity: 0.8;
             }
             100% {
-                transform: translateY(-50px) translateX(20px);
+                /* 向上移动超过屏幕高度 */
+                transform: translateY(-120vh) rotate(360deg); 
                 opacity: 0;
             }
         }
+        /* ----------------------- */
 
         .controls {
             display: flex;
@@ -171,6 +184,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
+            position: relative;
+            z-index: 20;
         }
 
         .song-item {
@@ -228,6 +243,8 @@
     </style>
 </head>
 <body>
+    <div id="fullscreen-notes"></div>
+
     <div class="container">
         <header>
             <h1>🎵 个人音乐空间 🎵</h1>
@@ -235,8 +252,7 @@
 
         <div class="music-player">
             <div class="visualizer" id="visualizer">
-                <div class="notes" id="notes"></div>
-            </div>
+                </div>
 
             <div class="track-info">
                 <div class="track-title" id="trackTitle">请选择歌曲</div>
@@ -263,8 +279,7 @@
         </div>
 
         <div class="playlist" id="playlist">
-            <!-- 歌曲列表将通过JavaScript动态生成 -->
-        </div>
+            </div>
     </div>
 
     <audio id="audioPlayer"></audio>
@@ -277,7 +292,7 @@
                 file: "audio/Håll om mig - Nanne.mp3"
             },
             {
-                title: "IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin",
+                title: "IVORY TOWER (feat. SennaRin) - 澤野弘之",
                 file: "audio/IVORY TOWER (feat. SennaRin) (feat. SennaRin) - 澤野弘之、SennaRin.mp3"
             },
             {
@@ -285,15 +300,15 @@
                 file: "audio/MY ALL - 滨崎步.mp3"
             },
             {
-                title: "Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX",
+                title: "Rage Beneath the Mountains - 陈致逸",
                 file: "audio/Rage Beneath the Mountains 岩壑之崩 - 陈致逸、HOYO-MiX.mp3"
             },
             {
-                title: "Take Me Hand - DAISHI DANCE、Cécile Corbel",
+                title: "Take Me Hand - DAISHI DANCE",
                 file: "audio/Take Me Hand - DAISHI DANCE、Cécile Corbel.mp3"
             },
             {
-                title: "The Mass (Album Version) - Era",
+                title: "The Mass - Era",
                 file: "audio/The Mass (Album Version) - Era.mp3"
             },
             {
@@ -309,7 +324,7 @@
                 file: "audio/奇迹再现.mp3"
             },
             {
-                title: "弱水三千 (梨花飘落在你窗前)",
+                title: "弱水三千",
                 file: "audio/弱水三千 (梨花飘落在你窗前).mp3"
             },
             {
@@ -344,14 +359,15 @@
         const trackTitle = document.getElementById('trackTitle');
         const trackArtist = document.getElementById('trackArtist');
         const visualizer = document.getElementById('visualizer');
-        const notesContainer = document.getElementById('notes');
+        const notesContainer = document.getElementById('fullscreen-notes'); // 修改为全屏容器
         const playlist = document.getElementById('playlist');
 
         // 当前播放索引
         let currentSongIndex = -1;
         let isLooping = false;
+        let noteInterval; // 全局变量控制音符生成
 
-        // 创建可视化条
+        // 创建条状可视化条
         for (let i = 0; i < 60; i++) {
             const bar = document.createElement('div');
             bar.className = 'bar';
@@ -359,18 +375,51 @@
             visualizer.appendChild(bar);
         }
 
-        // 创建音符元素
+        // 创建全屏飘动音符函数
         function createNote() {
+            // 如果音频暂停，不生成新音符
+            if (audioPlayer.paused) return;
+
             const note = document.createElement('div');
             note.className = 'note';
-            note.innerHTML = '♪';
-            note.style.left = Math.random() * 100 + '%';
-            note.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            
+            // 随机音符符号
+            const symbols = ['♪', '♫', '♩', '♬'];
+            note.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            // 随机水平位置 (0% - 100%)
+            note.style.left = Math.random() * 95 + '%'; 
+            
+            // 随机大小
+            const size = Math.random() * 20 + 15; // 15px - 35px
+            note.style.fontSize = size + 'px';
+            
+            // 随机颜色 (在青色和白色之间微调，或保持白色)
+            // note.style.color = Math.random() > 0.5 ? '#00c6ff' : 'white';
+
+            // 随机动画时长 (3s - 8s)
+            const duration = Math.random() * 5 + 3;
+            note.style.animationDuration = duration + 's';
+            
             notesContainer.appendChild(note);
 
+            // 动画结束后移除元素
             setTimeout(() => {
                 note.remove();
-            }, 3000);
+            }, duration * 1000);
+        }
+
+        // 启动音符生成
+        function startNotes() {
+            // 清除之前的定时器，防止叠加
+            if (noteInterval) clearInterval(noteInterval);
+            // 每 300ms 生成一个音符
+            noteInterval = setInterval(createNote, 300);
+        }
+
+        // 停止音符生成
+        function stopNotes() {
+            if (noteInterval) clearInterval(noteInterval);
         }
 
         // 格式化时间
@@ -412,11 +461,8 @@
                 // 更新播放列表高亮
                 updatePlaylistHighlight();
                 
-                // 播放
+                // 播放 (事件监听会自动触发 startNotes)
                 audioPlayer.play();
-                
-                // 创建音符动画
-                noteInterval = setInterval(createNote, 300);
             }
         }
 
@@ -469,15 +515,25 @@
             });
         }
 
-        // 音频事件监听
-        audioPlayer.addEventListener('timeupdate', updateProgress);
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            durationEl.textContent = formatTime(audioPlayer.duration);
+        // --- 事件监听优化 ---
+
+        // 音频播放时开始飘音符
+        audioPlayer.addEventListener('play', () => {
+            startNotes();
         });
+
+        // 音频暂停或结束时停止生成新音符
+        audioPlayer.addEventListener('pause', stopNotes);
         audioPlayer.addEventListener('ended', () => {
+            stopNotes();
             if (!isLooping) {
                 nextSong();
             }
+        });
+
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audioPlayer.duration);
         });
 
         // 按钮事件监听
@@ -501,10 +557,9 @@
         // 初始化播放列表
         generatePlaylist();
 
-        // 音乐可视化动画
+        // 音乐可视化动画 (条状图)
         let bars = document.querySelectorAll('.bar');
         let animationId;
-        let noteInterval;
 
         function animateVisualizer() {
             // 随机生成可视化效果
@@ -516,13 +571,13 @@
             animationId = requestAnimationFrame(animateVisualizer);
         }
 
-        // 开始动画
+        // 开始条状动画
         animateVisualizer();
 
-        // 页面加载完成后停止动画（当不需要时）
+        // 页面卸载清理
         window.addEventListener('beforeunload', () => {
             cancelAnimationFrame(animationId);
-            if (noteInterval) clearInterval(noteInterval);
+            stopNotes();
         });
     </script>
 </body>
